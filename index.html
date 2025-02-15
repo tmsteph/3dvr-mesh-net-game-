@@ -63,6 +63,18 @@
             opacity: 0.5;
             pointer-events: none;
         }
+        #win-message {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: black;
+            color: limegreen;
+            padding: 20px;
+            font-size: 5vw;
+            border: 2px solid limegreen;
+        }
     </style>
 </head>
 <body>
@@ -72,24 +84,29 @@
 
     <div class="shop">
         <h2 style="font-size: 4vw;">Upgrades</h2>
-        <div class="shop-item" id="buyNode">Deploy Router - $20</div>
-        <div class="shop-item" id="buySatellite">Deploy Satellite - $100</div>
+        <div class="shop-item" id="buyNode">Deploy Router - $10</div>
+        <div class="shop-item" id="buySatellite">Deploy Satellite - $50</div>
     </div>
+
+    <div id="win-message">🎉 You Built a Working MeshNet! 🎉</div>
 
     <script>
         let money = 50;
         let gameArea = document.getElementById("gameArea");
         let nodes = [];
         let placingType = "router";
+        let incomePerRouter = 5;
+        let incomeInterval = 3000;
+        let winCondition = 10;
 
         function updateUI() {
             document.getElementById("money").innerText = "Money: $" + money;
-            document.getElementById("buyNode").classList.toggle("disabled", money < 20);
-            document.getElementById("buySatellite").classList.toggle("disabled", money < 100);
+            document.getElementById("buyNode").classList.toggle("disabled", money < 10);
+            document.getElementById("buySatellite").classList.toggle("disabled", money < 50);
         }
 
         function addNode(x, y, type = "router") {
-            let cost = type === "router" ? 20 : 100;
+            let cost = type === "router" ? 10 : 50;
             if (money < cost) return;
 
             let node = document.createElement("div");
@@ -100,8 +117,20 @@
             gameArea.appendChild(node);
 
             nodes.push({ x, y, type });
+
+            if (type === "router") {
+                setInterval(() => {
+                    money += incomePerRouter;
+                    updateUI();
+                }, incomeInterval);
+            }
+
             money -= cost;
             updateUI();
+
+            if (nodes.length >= winCondition) {
+                document.getElementById("win-message").style.display = "block";
+            }
         }
 
         gameArea.addEventListener("click", (e) => {
