@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>MeshNet Builder</title>
     <style>
         body {
@@ -16,38 +16,45 @@
         }
         h1 {
             text-shadow: 0px 0px 10px limegreen;
+            font-size: 5vw;
         }
         #money {
-            font-size: 20px;
+            font-size: 4vw;
             margin: 10px 0;
         }
         .game-container {
             position: relative;
-            width: 90vw;
-            height: 70vh;
+            width: 95vw;
+            height: 50vh;
             border: 2px solid limegreen;
             margin: auto;
             background-color: #222;
             cursor: crosshair;
+            overflow: hidden;
         }
         .node {
             position: absolute;
-            width: 20px;
-            height: 20px;
+            width: 4vw;
+            height: 4vw;
+            min-width: 20px;
+            min-height: 20px;
             background-color: limegreen;
             border-radius: 50%;
             transform: translate(-50%, -50%);
         }
         .shop {
-            margin-top: 20px;
+            margin-top: 10px;
+            width: 100%;
         }
         .shop-item {
             background: rgba(0, 255, 0, 0.2);
             padding: 10px;
-            margin: 10px;
+            margin: 5px;
             border-radius: 5px;
             cursor: pointer;
             transition: 0.3s;
+            font-size: 4vw;
+            display: inline-block;
         }
         .shop-item:hover {
             background: rgba(0, 255, 0, 0.5);
@@ -64,15 +71,16 @@
     <div class="game-container" id="gameArea"></div>
 
     <div class="shop">
-        <h2>Upgrades</h2>
-        <div class="shop-item" id="buyNode">Deploy Router - Cost: $20</div>
-        <div class="shop-item" id="buySatellite">Deploy Satellite (Wider Range) - Cost: $100</div>
+        <h2 style="font-size: 4vw;">Upgrades</h2>
+        <div class="shop-item" id="buyNode">Deploy Router - $20</div>
+        <div class="shop-item" id="buySatellite">Deploy Satellite - $100</div>
     </div>
 
     <script>
         let money = 50;
         let gameArea = document.getElementById("gameArea");
         let nodes = [];
+        let placingType = "router";
 
         function updateUI() {
             document.getElementById("money").innerText = "Money: $" + money;
@@ -81,17 +89,18 @@
         }
 
         function addNode(x, y, type = "router") {
-            if ((type === "router" && money < 20) || (type === "satellite" && money < 100)) return;
+            let cost = type === "router" ? 20 : 100;
+            if (money < cost) return;
 
             let node = document.createElement("div");
             node.classList.add("node");
-            node.style.left = x + "px";
-            node.style.top = y + "px";
+            node.style.left = Math.max(10, Math.min(x, gameArea.clientWidth - 10)) + "px";
+            node.style.top = Math.max(10, Math.min(y, gameArea.clientHeight - 10)) + "px";
             node.style.backgroundColor = type === "satellite" ? "cyan" : "limegreen";
             gameArea.appendChild(node);
 
             nodes.push({ x, y, type });
-            money -= type === "router" ? 20 : 100;
+            money -= cost;
             updateUI();
         }
 
@@ -99,15 +108,15 @@
             let rect = gameArea.getBoundingClientRect();
             let x = e.clientX - rect.left;
             let y = e.clientY - rect.top;
-            addNode(x, y);
+            addNode(x, y, placingType);
         });
 
         document.getElementById("buyNode").addEventListener("click", () => {
-            gameArea.dataset.placing = "router";
+            placingType = "router";
         });
 
         document.getElementById("buySatellite").addEventListener("click", () => {
-            gameArea.dataset.placing = "satellite";
+            placingType = "satellite";
         });
 
         updateUI();
